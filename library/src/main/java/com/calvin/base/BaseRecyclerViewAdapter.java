@@ -47,6 +47,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     }
 
     public BaseRecyclerViewAdapter(List<T> data,@LayoutRes int layoutResId){
+        TAG = ((Object) this).getClass().getSimpleName();
         this.layoutResId = layoutResId;
         this.data = data == null ? new ArrayList<T>() : data;
         if(headerViews == null){
