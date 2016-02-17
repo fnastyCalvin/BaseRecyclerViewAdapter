@@ -26,6 +26,8 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
 
     private OnItemClickListener<T> onItemClickListener;
 
+    private boolean multiTypeItemSupport;
+
     private Handler mHandler = new Handler(Looper.getMainLooper());
 
     //head & footer
@@ -38,7 +40,6 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     protected static final int TYPE_HEADER = 1111111;
     protected static final int TYPE_FOOTER = 2222222;
     protected static final int TYPE_ITEM = 333333333;
-
     //head & footer
 
     public BaseRecyclerViewAdapter(@LayoutRes int layoutResId){
@@ -53,6 +54,47 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
         }
         if(footerViews == null){
             footerViews = new ArrayList<>();
+        }
+    }
+
+    public BaseRecyclerViewAdapter(List<T> data,boolean multiType){
+        this.data = data == null ? new ArrayList<T>() : data;
+        if(headerViews == null){
+            headerViews = new ArrayList<>();
+        }
+        if(footerViews == null){
+            footerViews = new ArrayList<>();
+        }
+        multiTypeItemSupport = multiType;
+    }
+
+    @Override
+    public BaseRecyclerViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
+        if(viewType == TYPE_HEADER || viewType == TYPE_FOOTER){
+            FrameLayout frameLayout = new FrameLayout(viewGroup.getContext());
+            //make sure it fills the space
+            /*if(mLayoutManager instanceof LinearLayoutManager){
+                if(mLayoutManager.canScrollVertically()){
+                    frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                }
+                else {
+                    frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                }
+            }*/
+            frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            return new HeaderFooterViewHolder(frameLayout);
+        }
+        else {
+            View view = null;
+            if(multiTypeItemSupport){
+                int layoutId = getLayoutResId(viewType);
+                view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutId, viewGroup, false);
+            }
+            else {
+                view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutResId, viewGroup, false);
+            }
+            BaseRecyclerViewHolder viewHolder = new BaseRecyclerViewHolder(view);
+            return viewHolder;
         }
     }
 
@@ -136,33 +178,10 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     }
 
     @Override
-    public BaseRecyclerViewHolder onCreateViewHolder(ViewGroup viewGroup, int viewType) {
-        if(viewType == TYPE_HEADER || viewType == TYPE_FOOTER){
-            FrameLayout frameLayout = new FrameLayout(viewGroup.getContext());
-            //make sure it fills the space
-            /*if(mLayoutManager instanceof LinearLayoutManager){
-                if(mLayoutManager.canScrollVertically()){
-                    frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                }
-                else {
-                    frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.MATCH_PARENT));
-                }
-            }*/
-            frameLayout.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
-            return new HeaderFooterViewHolder(frameLayout);
-        }
-        else {
-            View view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutResId, viewGroup, false);
-            BaseRecyclerViewHolder viewHolder = new BaseRecyclerViewHolder(view);
-            return viewHolder;
-        }
-    }
-
-    @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         context = recyclerView.getContext();
         super.onAttachedToRecyclerView(recyclerView);
-         mLayoutManager = recyclerView.getLayoutManager();
+        mLayoutManager = recyclerView.getLayoutManager();
         if(mLayoutManager instanceof GridLayoutManager) {
             final GridLayoutManager gridManager = ((GridLayoutManager) mLayoutManager);
             gridManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -202,6 +221,11 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
         notifyItemInserted(position);
     }
 
+    public void addAll(List<T> source){
+        data.addAll(source);
+        notifyItemRangeInserted(data.size(), source.size());
+    }
+
 
     public void remove(T item){
         int pos = data.indexOf(item);
@@ -239,7 +263,8 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
 
     //todo 是否需要
     public void clearAll(){
-
+        data.clear();
+        notifyDataSetChanged();
     }
 
     //add a header to the adapter
@@ -252,7 +277,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
                 public void run() {
                     notifyDataSetChanged();
                 }
-            },200);
+            }, 200);
         }
     }
 
@@ -296,6 +321,9 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
             return TYPE_FOOTER;
         }
         else {
+            if (multiTypeItemSupport) {
+                return getItemViewMultiType(position, getItem(position));
+            }
             return TYPE_ITEM;
         }
     }
@@ -312,9 +340,19 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
         return position;
     }
 
+    /**
+     * @return the count of all items including head and foot
+     */
     @Override
     public int getItemCount() {
-        return headerViews.size() + data.size() + footerViews.size();
+        return getHeadersCount() + data.size() + getFooterCount();
+    }
+
+    /**
+     * @return only the count of dataSource
+     */
+    public int getRealItemCount() {
+        return  data.size() ;
     }
 
     public Context getContext() {
@@ -329,8 +367,16 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
         return headerViews;
     }
 
+    public int getHeadersCount() {
+        return headerViews.size();
+    }
+
     public List<View> getFooterViews() {
         return footerViews;
+    }
+
+    public int getFooterCount() {
+        return footerViews.size();
     }
 
     public static class HeaderFooterViewHolder extends BaseRecyclerViewHolder {
@@ -348,6 +394,22 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
 
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
+    }
+
+    /**
+     * If isSupport is true ,Please override <strong>{@link #getLayoutResId(int)}</strong> and <strong>{@link #getItemViewMultiType(int, Object)}</strong>
+     * @param isSupport default is false
+     */
+    public void setMultiTypeItemSupport(boolean isSupport) {
+        this.multiTypeItemSupport = isSupport;
+    }
+
+    public @LayoutRes int getLayoutResId( int viewType){
+        return -1;
+    }
+
+    public int getItemViewMultiType(int position, T item){
+        return 0;
     }
 
 }
