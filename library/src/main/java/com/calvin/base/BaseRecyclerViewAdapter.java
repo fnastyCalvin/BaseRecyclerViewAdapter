@@ -24,7 +24,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     protected List<T> data;
     protected int layoutResId;
 
-    private OnItemClickListener<T> onItemClickListener;
+    protected OnItemClickListener<T> onItemClickListener;
 
     private boolean multiTypeItemSupport;
 
@@ -211,19 +211,18 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     }
 
     public void add(T item){
-        int oldSize = data.size();
         data.add(item);
-        notifyItemInserted(oldSize);
+        notifyItemInserted(data.size() + getHeadersCount());
     }
 
     public void add(int position , T item){
         data.add(position, item);
-        notifyItemInserted(position);
+        notifyItemInserted(position + getHeadersCount());
     }
 
     public void addAll(List<T> source){
         data.addAll(source);
-        notifyItemRangeInserted(data.size(), source.size());
+        notifyItemRangeInserted(data.size() + getHeadersCount(), source.size());
     }
 
 
@@ -236,24 +235,8 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
 
     public void remove(int position){
         data.remove(position);
-        notifyItemRemoved(position);
-        //保证数据不错乱
-        notifyDataSetChanged();
+        notifyItemRemoved(position + getHeadersCount());
     }
-
-    /*public void remove(int position){
-        int oldPos = position;
-        if(headerViews != null && !headerViews.isEmpty()){
-            position = position - headerViews.size();
-            if(position < 0){
-                throw new IllegalArgumentException("position must >= 0");
-            }
-        }
-        data.remove(position);
-        notifyItemRemoved(oldPos);
-        //保证数据不错乱
-        notifyDataSetChanged();
-    }*/
 
     // TODO: 2016/1/20  加入head和foot的判断
     public void move(int from , int to){
@@ -261,7 +244,6 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
         notifyItemMoved(from, to);
     }
 
-    //todo 是否需要
     public void clearAll(){
         data.clear();
         notifyDataSetChanged();
