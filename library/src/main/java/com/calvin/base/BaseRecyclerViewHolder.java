@@ -9,7 +9,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 /**
- * Created by jiangtao on 2016/1/20 10:29.
+ * Created by calvin on 2016/1/20 10:29.
  */
 public class BaseRecyclerViewHolder extends RecyclerView.ViewHolder {
     private SparseArray<View> views;
@@ -36,8 +36,7 @@ public class BaseRecyclerViewHolder extends RecyclerView.ViewHolder {
     }
 
     /**
-     * 获取ViewHolder的整个itemView
-     * @return
+     * get ViewHolder's itemView
      */
     public View getConvertView() {
         return itemView;
