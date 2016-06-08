@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="80dp"
+    android:background="@drawable/selector_item"
+    android:descendantFocusability="blocksDescendants"
+    android:padding="5dp">
+
+    <!--<CheckBox
+        android:id="@+id/cb_item_normal_status"
+        style="@style/WrapWrap"
+        android:layout_centerVertical="true" />-->
+
+    <!--<ToggleButton
+        android:id="@+id/cb_item_normal_status"
+        style="@style/WrapWrap"
+        android:layout_centerVertical="true" />-->
+
+    <!--<Switch
+        android:id="@+id/cb_item_normal_status"
+        style="@style/WrapWrap"
+        android:layout_centerVertical="true" />-->
+
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/cb_item_normal_status"
+        style="@style/WrapWrap"
+        android:visibility="gone"
+        android:layout_centerVertical="true" />
+
+    <ImageView
+        android:id="@+id/iv_item_normal_avator"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:layout_toRightOf="@id/cb_item_normal_status"
+        android:layout_centerVertical="true"
+        android:scaleType="centerCrop"
+        android:src="@mipmap/holder" />
+
+    <TextView
+        android:id="@+id/tv_item_normal_delete"
+        style="@style/WrapMatch"
+        android:layout_alignParentRight="true"
+        android:layout_marginLeft="5dp"
+        android:background="@drawable/selector_btn_red"
+        android:clickable="true"
+        android:gravity="center"
+        android:paddingLeft="10dp"
+        android:paddingRight="10dp"
+        android:text="删除"
+        android:textColor="#664488"
+        android:textSize="18sp" />
+
+    <TextView
+        android:id="@+id/tv_item_normal_title"
+        style="@style/WrapWrap"
+        android:layout_toLeftOf="@id/tv_item_normal_delete"
+        android:layout_toRightOf="@id/iv_item_normal_avator"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="#664488"
+        android:text="标题"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+    <TextView
+        android:id="@+id/tv_item_normal_detail"
+        style="@style/WrapWrap"
+        android:layout_alignParentBottom="true"
+        android:layout_toLeftOf="@id/tv_item_normal_delete"
+        android:layout_toRightOf="@id/iv_item_normal_avator"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="#664488"
+        android:text="详细内容"
+        android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+    <TextView
+        android:id="@+id/tv_item_type"
+        style="@style/WrapWrap"
+        android:layout_toLeftOf="@id/tv_item_normal_delete"
+        android:layout_toRightOf="@id/iv_item_normal_avator"
+        android:layout_below="@id/tv_item_normal_title"
+        android:layout_above="@id/tv_item_normal_detail"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textColor="#664488"
+        android:text="类型2"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+
+</RelativeLayout>
