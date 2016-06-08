@@ -17,7 +17,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     protected static String TAG = null;
     private Context context;
     protected List<T> data;
-    protected int layoutResId;
+    protected int layoutResId = -1;
     protected OnItemClickListener<T> onItemClickListener;
 
     protected boolean multiTypeItemSupport;
@@ -75,14 +75,16 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     public void onBindViewHolder(final BaseRecyclerViewHolder viewHolder, final int position) {
         viewHolder.itemView.setTag(position);
         final T item = getItem(position);
-        viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (onItemClickListener != null) {
-                    onItemClickListener.onItemClick(viewHolder.itemView, item, position);
+        if (isEnabled(getItemViewType(position))) {
+            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (onItemClickListener != null) {
+                        onItemClickListener.onItemClick(viewHolder.itemView, item, position);
+                    }
                 }
-            }
-        });
+            });
+        }
         onBind(viewHolder, position, item);
     }
 
@@ -98,6 +100,10 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         context = recyclerView.getContext();
         super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    public boolean isEnabled(int viewType){
+        return true;
     }
 
     public void add(T item){
