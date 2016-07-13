@@ -156,10 +156,11 @@ public abstract class BaseSectionAdapter<T extends Section> extends BaseRecycler
     public abstract void onBindItemView(BaseRecyclerViewHolder viewHolder, int position, T item);
 
     public static class SectionViewHolder extends BaseRecyclerViewHolder {
+        private static final String  SECTION_TITLE = "SECTION_TITLE";
         private final TextView titleView;
         public SectionViewHolder(View itemView) {
             super(itemView);
-            this.titleView = (TextView) itemView.findViewWithTag("SECTION_TITLE");
+            this.titleView = (TextView) itemView.findViewWithTag(SECTION_TITLE);
         }
     }
 
@@ -169,7 +170,7 @@ public abstract class BaseSectionAdapter<T extends Section> extends BaseRecycler
         if (titleView == null) {
             throw new RuntimeException("The section layout xml must contain a TextView with the id called \"android.R.id.title\".");
         }
-        titleView.setTag("SECTION_TITLE");
+        titleView.setTag(SectionViewHolder.SECTION_TITLE);
         return view;
     }
 }

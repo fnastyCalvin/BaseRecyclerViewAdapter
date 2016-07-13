@@ -33,7 +33,7 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
     //header & footer end
 
     public HeaderFooterAdapter(RecyclerView.Adapter<BaseRecyclerViewHolder> wrappedAdapter) {
-        setAdapter(wrappedAdapter);
+        this.wrappedAdapter = wrappedAdapter;
     }
 
     @Override
@@ -201,7 +201,7 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
         }
     }
 
-    public void setAdapter(@NonNull RecyclerView.Adapter<BaseRecyclerViewHolder> adapter) {
+    /*public void setAdapter(@NonNull RecyclerView.Adapter<BaseRecyclerViewHolder> adapter) {
         if (!(adapter instanceof RecyclerView.Adapter)){
             throw new RuntimeException("adapter must be a RecyclerView.Adapter<BaseRecyclerViewHolder> or BaseRecyclerViewAdapter");
         }
@@ -247,7 +247,7 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
             int headerViewsCountCount = getHeaderViewsCount();
             notifyItemRangeChanged(fromPosition + headerViewsCountCount, toPosition + headerViewsCountCount + itemCount);
         }
-    };
+    };*/
 
     /**
      * @return the count of all items including head and foot

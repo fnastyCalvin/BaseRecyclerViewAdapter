@@ -75,24 +75,23 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     public void onBindViewHolder(final BaseRecyclerViewHolder viewHolder, final int position) {
         viewHolder.itemView.setTag(position);
         final T item = getItem(position);
-        if (isEnabled(getItemViewType(position))) {
-            viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (onItemClickListener != null) {
-                        onItemClickListener.onItemClick(viewHolder.itemView, item, position);
+        if (item != null) {
+            if (isEnabled(getItemViewType(position))) {
+                viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (onItemClickListener != null) {
+                            onItemClickListener.onItemClick(viewHolder.itemView, item, position);
+                        }
                     }
-                }
-            });
+                });
+            }
+            onBind(viewHolder, position, item);
         }
-        onBind(viewHolder, position, item);
     }
 
     /**
      * onBindViewHolder
-     * @param viewHolder
-     * @param position  real position in dataSource
-     * @param item
      */
     public abstract void onBind(BaseRecyclerViewHolder viewHolder, int position, T item);
 
@@ -158,7 +157,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     }
 
     public T getItem(int position){
-        if(position > data.size() || position < 0){
+        if(position > data.size() || position < 0 || data.isEmpty()){
             return null;
         }
         return data.get(position);
@@ -205,7 +204,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     /**
      * when using a multiType adapter, override this method to <strong>get the layout xml file for the specific viewType</strong>
      */
-    public @LayoutRes int getLayoutResId( int viewType){
+    public @LayoutRes int getLayoutResId(int viewType){
         return -1;
     }
 
