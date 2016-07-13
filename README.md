@@ -2,9 +2,11 @@
 a library for creating simple adapter for RecyclerView
 </br>
 </br>
-##Gradle
 
-</br>
+
+[![](https://jitpack.io/v/fnastyCalvin/BaseRecyclerViewAdapter.svg)](https://jitpack.io/#fnastyCalvin/BaseRecyclerViewAdapter)
+
+##Gradle
 ```
   repositories {
         ...
