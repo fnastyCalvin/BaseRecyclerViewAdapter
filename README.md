@@ -14,4 +14,4 @@ a library for creating simple adapter for RecyclerView
     }
 ```
 </br>
-`compile 'com.github.fnastyCalvin:BaseRecyclerViewAdapter:0.0.1'`
+`compile 'com.github.fnastyCalvin:BaseRecyclerViewAdapter:1.0.0'`
