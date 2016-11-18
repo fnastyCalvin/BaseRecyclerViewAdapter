@@ -65,6 +65,7 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
         if (loadMoreLayoutId <= 0){
             throw new RuntimeException("need a load more layout xml");
         }
+        this.recyclerView = recyclerView;
         super.onAttachedToRecyclerView(recyclerView);
         wrappedAdapter.onAttachedToRecyclerView(recyclerView);
         RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
@@ -166,6 +167,11 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
 
     public void endLoadMore() {
         displayLoadMore = true;
-        notifyDataSetChanged();
+        recyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                notifyDataSetChanged();
+            }
+        });
     }
 }
