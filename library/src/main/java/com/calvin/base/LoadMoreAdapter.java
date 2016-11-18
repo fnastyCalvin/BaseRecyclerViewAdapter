@@ -15,6 +15,8 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
 
     private static final String TAG = LoadMoreAdapter.class.getSimpleName();
 
+    protected RecyclerView recyclerView;
+
     private static final int ITEM_TYPE_LOAD_MORE = Integer.MAX_VALUE - 1;
 
     private final BaseRecyclerViewAdapter wrappedAdapter;
@@ -23,6 +25,10 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
 
     private int loadMoreLayoutId;
     private boolean displayLoadMore = true;//whether or not display the load more view
+
+    public LoadMoreAdapter(BaseRecyclerViewAdapter wrappedAdapter) {
+        this(wrappedAdapter,R.layout.loadmore_progress);
+    }
 
     public LoadMoreAdapter(BaseRecyclerViewAdapter wrappedAdapter,@LayoutRes int layoutId) {
         this.wrappedAdapter = wrappedAdapter;
@@ -121,7 +127,12 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
     public void setNoMore(boolean isNoMore2Load) {
         if (isNoMore2Load){
             displayLoadMore = false;
-            notifyItemRemoved(getItemCount()-1);
+            recyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+                    notifyItemRemoved(getItemCount()-1);
+                }
+            });
         }
     }
 
