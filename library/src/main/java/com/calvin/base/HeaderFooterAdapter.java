@@ -5,6 +5,7 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -32,8 +33,8 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
     private RecyclerView recyclerView;
     //header & footer end
 
-    public HeaderFooterAdapter(RecyclerView.Adapter<BaseRecyclerViewHolder> wrappedAdapter) {
-        this.wrappedAdapter = wrappedAdapter;
+    public HeaderFooterAdapter(RecyclerView.Adapter<BaseRecyclerViewHolder> adapter) {
+        setAdapter(adapter);
     }
 
     @Override
@@ -91,7 +92,7 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
         if(viewHolder.convertView.getTag() != null){
             viewHolder.convertView.setVisibility(View.VISIBLE);
             if(viewHolder.convertView.getMeasuredWidth() <= 0 || viewHolder.convertView.getMeasuredHeight() <= 0){
-                throw new RuntimeException("head or foot view better set exactly height and width");
+                Log.e(TAG,"head or foot view better set exactly height and width");
             }
         }
         else {
@@ -160,6 +161,7 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
      */
     public void addHeaderView(@NonNull View header){
         if(!headerViews.contains(header)){
+            headerViews.add(header);
             if (!headerViews.isEmpty()) {
                 notifyItemInserted(headerViews.size() - 1);
             }
@@ -167,7 +169,6 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
                 notifyItemInserted(0);
 //                recyclerView.smoothScrollToPosition(0);
             }
-            headerViews.add(header);
         }
     }
 
@@ -176,8 +177,8 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
      */
     public void removeHeaderView(@NonNull View header){
         if(headerViews.contains(header)){
-            notifyItemRemoved(headerViews.indexOf(header));
             headerViews.remove(header);
+            notifyItemRemoved(headerViews.indexOf(header));
         }
     }
 
@@ -196,17 +197,16 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
      */
     public void removeFooterView(@NonNull View footer){
         if(footerViews.contains(footer)) {
-            notifyItemRemoved(headerViews.size() + wrappedAdapter.getItemCount() + footerViews.indexOf(footer));
             footerViews.remove(footer);
+            notifyItemRemoved(headerViews.size() + wrappedAdapter.getItemCount() + footerViews.indexOf(footer));
         }
     }
 
-    /*public void setAdapter(@NonNull RecyclerView.Adapter<BaseRecyclerViewHolder> adapter) {
-        if (!(adapter instanceof RecyclerView.Adapter)){
-            throw new RuntimeException("adapter must be a RecyclerView.Adapter<BaseRecyclerViewHolder> or BaseRecyclerViewAdapter");
-        }
+    public void setAdapter(@NonNull RecyclerView.Adapter<BaseRecyclerViewHolder> adapter) {
         if (wrappedAdapter != null) {
-            notifyItemRangeRemoved(getHeaderViewsCount(), wrappedAdapter.getItemCount());
+            if (wrappedAdapter.getItemCount() > 0) {
+                notifyItemRangeRemoved(getHeaderViewsCount(), wrappedAdapter.getItemCount());
+            }
             wrappedAdapter.unregisterAdapterDataObserver(dataObserver);
         }
 
@@ -247,7 +247,7 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
             int headerViewsCountCount = getHeaderViewsCount();
             notifyItemRangeChanged(fromPosition + headerViewsCountCount, toPosition + headerViewsCountCount + itemCount);
         }
-    };*/
+    };
 
     /**
      * @return the count of all items including head and foot

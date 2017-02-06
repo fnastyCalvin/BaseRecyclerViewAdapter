@@ -2,6 +2,7 @@ package com.calvin.base;
 
 import android.content.Context;
 import android.support.annotation.LayoutRes;
+import android.support.v4.util.SparseArrayCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,11 +17,13 @@ import java.util.List;
 public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHolder> {
     protected static String TAG = null;
     private Context context;
+    protected RecyclerView recyclerView;
     protected List<T> data;
     protected int layoutResId = -1;
     protected OnItemClickListener<T> onItemClickListener;
 
     protected boolean multiTypeItemSupport;
+    protected SparseArrayCompat<View> multiTypeItems;
 
     public BaseRecyclerViewAdapter(){
         //do not use;
@@ -98,6 +101,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
         context = recyclerView.getContext();
+        this.recyclerView = recyclerView;
         super.onAttachedToRecyclerView(recyclerView);
     }
 
