@@ -6,7 +6,7 @@ a library for creating simple adapter for RecyclerView
 
 [![](https://jitpack.io/v/fnastyCalvin/BaseRecyclerViewAdapter.svg)](https://jitpack.io/#fnastyCalvin/BaseRecyclerViewAdapter)
 
-##Gradle
+## Gradle
 ```
   repositories {
         ...
