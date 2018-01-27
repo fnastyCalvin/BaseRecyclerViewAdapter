@@ -97,7 +97,8 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
             gridManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
                 @Override
                 public int getSpanSize(int position) {
-                    return getItemViewType(position) != ITEM_TYPE_LOAD_MORE ? gridManager.getSpanCount() : 1;
+                    boolean isNormalItem = getItemViewType(position) != ITEM_TYPE_LOAD_MORE && getItemViewType(position) != ITEM_TYPE_NO_MORE_LOAD;
+                    return  isNormalItem ? 1 : gridManager.getSpanCount();
                 }
             });
         }
@@ -119,7 +120,6 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
             }
         }
     }
-
 
     private boolean hasLoadMoreView()
     {
@@ -225,12 +225,12 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
         if (isNoMore2Load){
             this.isNoMore2Load = true;
             needDisplayLoadMore = false;
-            recyclerView.post(new Runnable() {
+            /*recyclerView.post(new Runnable() {
                 @Override
                 public void run() {
 //                    notifyItemRemoved(getItemCount()-1);
                 }
-            });
+            });*/
 
         }
     }

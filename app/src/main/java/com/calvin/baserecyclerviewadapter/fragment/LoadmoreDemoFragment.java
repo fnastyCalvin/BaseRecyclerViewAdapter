@@ -3,7 +3,7 @@ package com.calvin.baserecyclerviewadapter.fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -38,7 +38,7 @@ public class LoadmoreDemoFragment extends Fragment {
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater      inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         root = LayoutInflater.from(getActivity()).inflate(R.layout.fragment_list_view, null);
         initView();
         initData();
@@ -67,8 +67,10 @@ public class LoadmoreDemoFragment extends Fragment {
     private void initView() {
         adapter = new NormalAdapter(R.layout.item_normal);
         recyclerView = (RecyclerView) root.findViewById(R.id.recyclerView);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+       /* LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);*/
+        GridLayoutManager layoutManager = new GridLayoutManager(getContext(),3);
+
         recyclerView.setLayoutManager(layoutManager);
 
         loadMoreAdapter = new LoadMoreAdapter(adapter);
