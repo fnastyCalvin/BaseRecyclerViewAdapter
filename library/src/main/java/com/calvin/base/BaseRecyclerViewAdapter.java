@@ -27,6 +27,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
 
     public BaseRecyclerViewAdapter(){
         //do not use;
+        this(null,-1);
     }
 
     public BaseRecyclerViewAdapter(@LayoutRes int layoutResId){

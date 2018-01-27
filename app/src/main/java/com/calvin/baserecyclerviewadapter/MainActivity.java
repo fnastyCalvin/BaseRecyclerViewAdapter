@@ -10,12 +10,17 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
+import com.calvin.baserecyclerviewadapter.fragment.HeaderFooterDemoFragment;
+import com.calvin.baserecyclerviewadapter.fragment.LoadmoreDemoFragment;
+import com.calvin.baserecyclerviewadapter.fragment.MultiTypeDemoFragment;
+import com.calvin.baserecyclerviewadapter.fragment.RecyclerViewDemoFragment;
 import com.calvin.baserecyclerviewadapter.fragment.SectionDemoFragment;
 
 public class MainActivity extends AppCompatActivity {
 
     private Class[] mFragmentClasses = new Class[]{
-//            RecyclerViewDemoFragment.class, HeaderFooterDemoFragment.class, MultiTypeDemoFragment.class
+            RecyclerViewDemoFragment.class, HeaderFooterDemoFragment.class, MultiTypeDemoFragment.class,
+            LoadmoreDemoFragment.class,
 //            ,MultiTypeWithHeaderDemoFragment.class,
             SectionDemoFragment.class};
     private CoordinatorLayout mCoordinatorLayout;

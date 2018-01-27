@@ -4,6 +4,7 @@ import android.support.annotation.LayoutRes;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,43 +19,65 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
     protected RecyclerView recyclerView;
 
     private static final int ITEM_TYPE_LOAD_MORE = Integer.MAX_VALUE - 1;
+    private static final int ITEM_TYPE_NO_MORE_LOAD = Integer.MAX_VALUE - 2;
 
     private final BaseRecyclerViewAdapter wrappedAdapter;
 
     private OnLoadMoreListener onLoadMoreListener;
 
-    private int loadMoreLayoutId;
-    private boolean displayLoadMore = true;//whether or not display the load more view
+    private int loadMoreLayoutId,noMoreLoadViewId;
+    private boolean needDisplayLoadMore = true;//whether or not display the load more view
+    private boolean isNoMore2Load; //whether or not display no more load view
 
     public LoadMoreAdapter(BaseRecyclerViewAdapter wrappedAdapter) {
         this(wrappedAdapter,R.layout.loadmore_progress);
     }
 
     public LoadMoreAdapter(BaseRecyclerViewAdapter wrappedAdapter,@LayoutRes int layoutId) {
+        this(wrappedAdapter,layoutId,-1);
+    }
+
+    public LoadMoreAdapter(BaseRecyclerViewAdapter wrappedAdapter,@LayoutRes int layoutId,@LayoutRes int noMoreLoadViewId) {
         this.wrappedAdapter = wrappedAdapter;
         this.loadMoreLayoutId = layoutId;
+        this.noMoreLoadViewId = noMoreLoadViewId;
     }
 
     @Override
     public BaseRecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == ITEM_TYPE_LOAD_MORE && displayLoadMore)
+        if (viewType == ITEM_TYPE_LOAD_MORE )
         {
-            return  createLoadMoreViewHolder(parent,loadMoreLayoutId);
+            return createLoadMoreViewHolder(parent,loadMoreLayoutId);
+        }
+        else if (viewType == ITEM_TYPE_NO_MORE_LOAD ){
+            return createLoadMoreViewHolder(parent, noMoreLoadViewId);
         }
         return wrappedAdapter.onCreateViewHolder(parent, viewType);
     }
 
     @Override
     public void onBindViewHolder(BaseRecyclerViewHolder holder, int position) {
+        Log.d(TAG, "onBindViewHolder: cout->"+getItemCount());
         if (getItemViewType(position) == ITEM_TYPE_LOAD_MORE) {
-            if (needShowLoadMore(position) && displayLoadMore) {
-                displayLoadMore = false;
-                if (onLoadMoreListener != null) {
-                    onLoadMoreListener.onLoadMore();
-                }
+            if (needShowLoadMoreView(position) && needDisplayLoadMore) {
+                //show load more view
+                needDisplayLoadMore = false;
+                recyclerView.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (onLoadMoreListener != null) {
+                            onLoadMoreListener.onLoadMore();
+                        }
+                    }
+                }, 200);
             }
         }
-        else {
+        else if (getItemViewType(position) == ITEM_TYPE_NO_MORE_LOAD) {
+            if (needShowLoadMoreView(position) && isNoMore2Load) {
+                //show no anymore data to load view
+                isNoMore2Load = false;
+            }
+        } else {
             if (position > wrappedAdapter.getItemCount() - 1) return;
             wrappedAdapter.onBindViewHolder(holder, position);
         }
@@ -87,7 +110,7 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
         if(lp != null && lp instanceof StaggeredGridLayoutManager.LayoutParams)
         {
             StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) lp;
-            if(needShowLoadMore(holder.getAdapterPosition()))
+            if(needShowLoadMoreView(holder.getAdapterPosition()) || needShowNoMoreLoadView(holder.getAdapterPosition()))
             {
                 p.setFullSpan(true);
             }
@@ -100,21 +123,35 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
 
     private boolean hasLoadMoreView()
     {
-        return loadMoreLayoutId != 0;
+        return loadMoreLayoutId > 0;
     }
 
-    private boolean needShowLoadMore(int position)
+    private boolean hasNoMoreLoadView()
+    {
+        return noMoreLoadViewId > 0;
+    }
+
+    private boolean needShowLoadMoreView(int position)
     {
         if (wrappedAdapter.getItemCount() < 1) return false;
-        return hasLoadMoreView() && (position == wrappedAdapter.getItemCount() );
+        return hasLoadMoreView() && !isNoMore2Load && (position == wrappedAdapter.getItemCount() );
+    }
+
+    private boolean needShowNoMoreLoadView(int position)
+    {
+        if (wrappedAdapter.getItemCount() < 1) return false;
+        return hasNoMoreLoadView() && isNoMore2Load && (position == wrappedAdapter.getItemCount() );
     }
 
     @Override
     public int getItemViewType(int position)
     {
-        if (needShowLoadMore(position))
+        if (needShowLoadMoreView(position))
         {
             return ITEM_TYPE_LOAD_MORE;
+        }
+        else if (needShowNoMoreLoadView(position)){
+            return ITEM_TYPE_NO_MORE_LOAD;
         }
         return wrappedAdapter.getItemViewType(position);
     }
@@ -122,22 +159,16 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
     @Override
     public int getItemCount() {
         if (wrappedAdapter.getItemCount() < 1 ) return 0;
-        return wrappedAdapter.getItemCount() + ( hasLoadMoreView() && displayLoadMore ? 1 : 0);
-    }
-
-    public void setNoMore(boolean isNoMore2Load) {
         if (isNoMore2Load){
-            displayLoadMore = false;
-            recyclerView.post(new Runnable() {
-                @Override
-                public void run() {
-                    notifyItemRemoved(getItemCount()-1);
-                }
-            });
+            return wrappedAdapter.getItemCount() + (hasNoMoreLoadView() && isNoMore2Load ? 1 : 0);
+        }
+        else {
+            return wrappedAdapter.getItemCount() + (hasLoadMoreView() && needDisplayLoadMore ? 1 : 0);
         }
     }
 
-    public static class LoadMoreViewHolder extends BaseRecyclerViewHolder {
+
+    private static class LoadMoreViewHolder extends BaseRecyclerViewHolder {
         public LoadMoreViewHolder(View itemView) {
             super(itemView);
         }
@@ -165,13 +196,42 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
         this.loadMoreLayoutId = layoutId;
     }
 
+    /**
+     * notifyDataSetChanged
+     */
     public void endLoadMore() {
-        displayLoadMore = true;
+        needDisplayLoadMore = true;
         recyclerView.post(new Runnable() {
             @Override
             public void run() {
                 notifyDataSetChanged();
             }
         });
+    }
+
+    /**
+     * set a footer view that shown nothing to load
+     * @param layoutId
+     */
+    public void setNoMoreLoadViewId(@LayoutRes int layoutId){
+        noMoreLoadViewId = layoutId;
+    }
+
+    /**
+     * there is nothing to load anymore.
+     * @param isNoMore2Load
+     */
+    public void setNoMore(boolean isNoMore2Load) {
+        if (isNoMore2Load){
+            this.isNoMore2Load = true;
+            needDisplayLoadMore = false;
+            recyclerView.post(new Runnable() {
+                @Override
+                public void run() {
+//                    notifyItemRemoved(getItemCount()-1);
+                }
+            });
+
+        }
     }
 }
