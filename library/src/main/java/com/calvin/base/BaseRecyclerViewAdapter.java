@@ -122,8 +122,9 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
 
     public void addAll(List<T> list) {
         if (list != null && !list.isEmpty()){
+            int oldSize = data.size();
             data.addAll(list);
-            notifyItemRangeInserted(data.size(), list.size());
+            notifyItemRangeInserted(oldSize, list.size());
         }
     }
 
@@ -132,6 +133,16 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
             data.clear();
             data.addAll(list);
             notifyDataSetChanged();
+        }
+    }
+
+    public void replaceAllNew(List<T> list) {
+        if (list != null && !list.isEmpty()) {
+            int previousSize = data.size();
+            data.clear();
+            notifyItemRangeRemoved(0, previousSize);
+            data.addAll(list);
+            notifyItemRangeInserted(0, list.size());
         }
     }
 

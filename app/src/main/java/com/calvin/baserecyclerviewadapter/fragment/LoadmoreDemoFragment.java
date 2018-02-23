@@ -52,8 +52,8 @@ public class LoadmoreDemoFragment extends Fragment {
                     adapter.addAll(response.body());
                 loadMoreAdapter.endLoadMore();
                     page++;
-                    if (page > 2){
-                        loadMoreAdapter.setNoMore(true);
+                    if (page > 3){
+                        loadMoreAdapter.setNoMore();
                     }
             }
 
@@ -66,7 +66,7 @@ public class LoadmoreDemoFragment extends Fragment {
 
     private void initView() {
         adapter = new NormalAdapter(R.layout.item_normal);
-        recyclerView = (RecyclerView) root.findViewById(R.id.recyclerView);
+        recyclerView = root.findViewById(R.id.recyclerView);
        /* LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);*/
         GridLayoutManager layoutManager = new GridLayoutManager(getContext(),3);
@@ -74,7 +74,7 @@ public class LoadmoreDemoFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
 
         loadMoreAdapter = new LoadMoreAdapter(adapter);
-        loadMoreAdapter.setNoMoreLoadViewId(R.layout.item_no_more);
+        loadMoreAdapter.setNoMoreLoadViewId(R.layout.no_more);
         loadMoreAdapter.setOnLoadMoreListener(new LoadMoreAdapter.OnLoadMoreListener() {
             @Override
             public void onLoadMore() {

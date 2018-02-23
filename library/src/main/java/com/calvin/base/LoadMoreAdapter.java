@@ -5,14 +5,13 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 /**
  * Created by calvin on 2016/7/12 11:23.
  */
-public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHolder>{
+public class LoadMoreAdapter extends RecyclerView.Adapter<BaseRecyclerViewHolder>{
 
     private static final String TAG = LoadMoreAdapter.class.getSimpleName();
 
@@ -21,11 +20,13 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
     private static final int ITEM_TYPE_LOAD_MORE = Integer.MAX_VALUE - 1;
     private static final int ITEM_TYPE_NO_MORE_LOAD = Integer.MAX_VALUE - 2;
 
-    private final BaseRecyclerViewAdapter wrappedAdapter;
+    private BaseRecyclerViewAdapter wrappedAdapter;
 
     private OnLoadMoreListener onLoadMoreListener;
 
     private int loadMoreLayoutId,noMoreLoadViewId;
+    private View loadMoreView,noMoreLoadView;
+
     private boolean needDisplayLoadMore = true;//whether or not display the load more view
     private boolean isNoMore2Load; //whether or not display no more load view
 
@@ -45,52 +46,75 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
 
     @Override
     public BaseRecyclerViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == ITEM_TYPE_LOAD_MORE )
+        if (viewType == ITEM_TYPE_LOAD_MORE)
         {
-            return createLoadMoreViewHolder(parent,loadMoreLayoutId);
+            Log.d(TAG, "onCreateViewHolder: ITEM_TYPE_LOAD_MORE ");
+            if (loadMoreLayoutId > 0) {
+                return BaseRecyclerViewHolder.createViewHolder(parent, loadMoreLayoutId);
+            }
+            return BaseRecyclerViewHolder.createViewHolder(loadMoreView);
         }
-        else if (viewType == ITEM_TYPE_NO_MORE_LOAD ){
-            return createLoadMoreViewHolder(parent, noMoreLoadViewId);
+        else if (viewType == ITEM_TYPE_NO_MORE_LOAD){
+            Log.d(TAG, "onCreateViewHolder: ITEM_TYPE_NO_MORE_LOAD ");
+            if (noMoreLoadViewId > 0) {
+                return BaseRecyclerViewHolder.createViewHolder(parent, noMoreLoadViewId);
+            }
+            return BaseRecyclerViewHolder.createViewHolder(noMoreLoadView);
         }
         return wrappedAdapter.onCreateViewHolder(parent, viewType);
     }
 
+
     @Override
     public void onBindViewHolder(BaseRecyclerViewHolder holder, int position) {
-        Log.d(TAG, "onBindViewHolder: cout->"+getItemCount());
-        if (getItemViewType(position) == ITEM_TYPE_LOAD_MORE) {
-            if (needShowLoadMoreView(position) && needDisplayLoadMore) {
-                //show load more view
-                needDisplayLoadMore = false;
-                recyclerView.postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (onLoadMoreListener != null) {
-                            onLoadMoreListener.onLoadMore();
-                        }
-                    }
-                }, 200);
-            }
-        }
-        else if (getItemViewType(position) == ITEM_TYPE_NO_MORE_LOAD) {
-            if (needShowLoadMoreView(position) && isNoMore2Load) {
-                //show no anymore data to load view
-                isNoMore2Load = false;
-            }
-        } else {
-            if (position > wrappedAdapter.getItemCount() - 1) return;
+        Log.d(TAG, "onBindViewHolder: "+" loadmore adpater count ==="+getItemCount());
+        if (position < wrappedAdapter.getItemCount()){
             wrappedAdapter.onBindViewHolder(holder, position);
+        }
+        else {
+            if (getItemViewType(position) == ITEM_TYPE_LOAD_MORE) {
+                if (needShowLoadMoreView(position) && needDisplayLoadMore) {
+                    //show load more view
+                    Log.d(TAG, "-------show load more view "+position+" loadmore adpater count ==="+getItemCount());
+                    if (onLoadMoreListener != null) {
+                        recyclerView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                onLoadMoreListener.onLoadMore();
+                            }
+                        }, 500);
+
+                    }
+                    recyclerView.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            needDisplayLoadMore = false;
+                        }
+                    }, 100);
+                }
+            }
+            else if (getItemViewType(position) == ITEM_TYPE_NO_MORE_LOAD) {
+                if (needShowLoadMoreView(position) && isNoMore2Load) {
+                    //show no anymore data to load view
+                    Log.d(TAG, "-------show no anymore load view "+position);
+                    isNoMore2Load = false;
+                }
+            }
+            else {
+                Log.w(TAG, "onBindViewHolder: ---- unknown item type");
+            }
         }
     }
 
     @Override
     public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        if (loadMoreLayoutId <= 0){
-            throw new RuntimeException("need a load more layout xml");
-        }
         this.recyclerView = recyclerView;
         super.onAttachedToRecyclerView(recyclerView);
         wrappedAdapter.onAttachedToRecyclerView(recyclerView);
+        makeFullSpan();
+    }
+
+    private void makeFullSpan() {
         RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
         if(layoutManager instanceof GridLayoutManager) {
             final GridLayoutManager gridManager = ((GridLayoutManager) layoutManager);
@@ -119,28 +143,29 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
                 p.setFullSpan(false);
             }
         }
+        makeFullSpan();
     }
 
     private boolean hasLoadMoreView()
     {
-        return loadMoreLayoutId > 0;
+        return loadMoreLayoutId > 0 || loadMoreView != null;
     }
 
     private boolean hasNoMoreLoadView()
     {
-        return noMoreLoadViewId > 0;
+        return noMoreLoadViewId > 0 || noMoreLoadView != null;
     }
 
     private boolean needShowLoadMoreView(int position)
     {
         if (wrappedAdapter.getItemCount() < 1) return false;
-        return hasLoadMoreView() && !isNoMore2Load && (position == wrappedAdapter.getItemCount() );
+        return hasLoadMoreView() && !isNoMore2Load && (position >= wrappedAdapter.getItemCount() );
     }
 
     private boolean needShowNoMoreLoadView(int position)
     {
         if (wrappedAdapter.getItemCount() < 1) return false;
-        return hasNoMoreLoadView() && isNoMore2Load && (position == wrappedAdapter.getItemCount() );
+        return hasNoMoreLoadView() && isNoMore2Load && (position >= wrappedAdapter.getItemCount() );
     }
 
     @Override
@@ -148,9 +173,11 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
     {
         if (needShowLoadMoreView(position))
         {
+            Log.d(TAG, "getItemViewType: ITEM_TYPE_LOAD_MORE");
             return ITEM_TYPE_LOAD_MORE;
         }
         else if (needShowNoMoreLoadView(position)){
+            Log.d(TAG, "getItemViewType: ITEM_TYPE_NO_MORE_LOAD");
             return ITEM_TYPE_NO_MORE_LOAD;
         }
         return wrappedAdapter.getItemViewType(position);
@@ -167,24 +194,12 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
         }
     }
 
-
-    private static class LoadMoreViewHolder extends BaseRecyclerViewHolder {
-        public LoadMoreViewHolder(View itemView) {
-            super(itemView);
-        }
-    }
-
     public void setOnLoadMoreListener(OnLoadMoreListener listener)
     {
         if (listener != null)
         {
             this.onLoadMoreListener = listener;
         }
-    }
-
-    private LoadMoreViewHolder  createLoadMoreViewHolder(ViewGroup parent, @LayoutRes int layoutResId) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(layoutResId, parent, false);
-        return new LoadMoreViewHolder(view);
     }
 
     public interface OnLoadMoreListener
@@ -196,17 +211,20 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
         this.loadMoreLayoutId = layoutId;
     }
 
+    public void setLoadMoreView(View loadMoreView) {
+        this.loadMoreView = loadMoreView;
+    }
+
+    public void setNoMoreLoadView(View noMoreLoadView) {
+        this.noMoreLoadView = noMoreLoadView;
+    }
+
     /**
      * notifyDataSetChanged
      */
     public void endLoadMore() {
         needDisplayLoadMore = true;
-        recyclerView.post(new Runnable() {
-            @Override
-            public void run() {
-                notifyDataSetChanged();
-            }
-        });
+        notifyDataSetChanged();
     }
 
     /**
@@ -219,19 +237,18 @@ public class LoadMoreAdapter<T> extends RecyclerView.Adapter<BaseRecyclerViewHol
 
     /**
      * there is nothing to load anymore.
-     * @param isNoMore2Load
      */
-    public void setNoMore(boolean isNoMore2Load) {
-        if (isNoMore2Load){
-            this.isNoMore2Load = true;
-            needDisplayLoadMore = false;
-            /*recyclerView.post(new Runnable() {
+    public void setNoMore() {
+        this.isNoMore2Load = true;
+        needDisplayLoadMore = false;
+        notifyDataSetChanged();
+        if (!hasNoMoreLoadView()) {
+            recyclerView.post(new Runnable() {
                 @Override
                 public void run() {
-//                    notifyItemRemoved(getItemCount()-1);
+                        notifyItemRemoved(getItemCount()-1);
                 }
-            });*/
-
+            });
         }
     }
 }
