@@ -1,9 +1,13 @@
 package com.calvin.base;
 
 import android.support.annotation.IdRes;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.util.SparseArray;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -50,5 +54,18 @@ public class BaseRecyclerViewHolder extends RecyclerView.ViewHolder {
             views.put(viewId, view);
         }
         return view;
+    }
+
+    public static BaseRecyclerViewHolder createViewHolder(@NonNull View itemView)
+    {
+        BaseRecyclerViewHolder holder = new BaseRecyclerViewHolder(itemView);
+        return holder;
+    }
+
+    public static BaseRecyclerViewHolder createViewHolder(@NonNull ViewGroup parent,@LayoutRes int layoutId)
+    {
+        View itemView = LayoutInflater.from(parent.getContext()).inflate(layoutId, parent,false);
+        BaseRecyclerViewHolder holder = new BaseRecyclerViewHolder(itemView);
+        return holder;
     }
 }
