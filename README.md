@@ -12,6 +12,7 @@ a library for creating simple adapter for RecyclerView
         ...
         maven { url "https://jitpack.io" }
     }
+    
+    compile 'com.github.fnastyCalvin:BaseRecyclerViewAdapter:1.0.2'
 ```
-</br>
-`compile 'com.github.fnastyCalvin:BaseRecyclerViewAdapter:1.0.0'`
+
