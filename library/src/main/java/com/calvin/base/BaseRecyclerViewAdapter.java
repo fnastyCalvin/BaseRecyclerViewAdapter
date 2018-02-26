@@ -71,7 +71,7 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
             view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutId, viewGroup, false);
         }
         else {
-            if (layoutResId <= 0 || itemView == null) throw new IllegalArgumentException("can not find a valid item view");
+            if (layoutResId <= 0 && itemView == null) throw new IllegalArgumentException("can not find a valid item view");
             if (layoutResId > 0) {
                 view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutResId, viewGroup, false);
             }
