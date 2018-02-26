@@ -4,11 +4,12 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+
+import com.calvin.base.utils.GridSpanUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -127,33 +128,32 @@ public class HeaderFooterAdapter extends RecyclerView.Adapter<BaseRecyclerViewHo
         this.recyclerView = recyclerView;
         context = recyclerView.getContext();
         super.onAttachedToRecyclerView(recyclerView);
-        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
-        if(layoutManager instanceof GridLayoutManager) {
-            final GridLayoutManager gridManager = ((GridLayoutManager) layoutManager);
-            gridManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                @Override
-                public int getSpanSize(int position) {
-                    return getItemViewType(position) == TYPE_ITEM ? 1 : gridManager.getSpanCount();
-                }
-            });
-        }
+        makeFullSpan();
     }
 
     @Override
     public void onViewAttachedToWindow(BaseRecyclerViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        ViewGroup.LayoutParams lp = holder.itemView.getLayoutParams();
-        if(lp != null && lp instanceof StaggeredGridLayoutManager.LayoutParams)
-        {
-            StaggeredGridLayoutManager.LayoutParams p = (StaggeredGridLayoutManager.LayoutParams) lp;
-            if(holder.getLayoutPosition() < headerViews.size() || holder.getLayoutPosition() >= headerViews.size() + wrappedAdapter.getItemCount())
-            {
-                p.setFullSpan(true);
+        makeStaggeredGridFullSpan(holder);
+        makeFullSpan();
+    }
+
+    private void makeFullSpan() {
+        GridSpanUtil.makeGridFullSpan(recyclerView, new GridSpanUtil.SpanSizeCallback() {
+            @Override
+            public int getSpanSize(GridLayoutManager gridManager, GridLayoutManager.SpanSizeLookup oldLookup, int position) {
+                return getItemViewType(position) == TYPE_ITEM ? 1 : gridManager.getSpanCount();
             }
-            else {
-                p.setFullSpan(false);
+        });
+    }
+
+    private void makeStaggeredGridFullSpan(final BaseRecyclerViewHolder holder) {
+        GridSpanUtil.makeStaggeredGridFullSpan(holder, new GridSpanUtil.SpanCallback() {
+            @Override
+            public boolean isFullSpan() {
+                return holder.getLayoutPosition() < headerViews.size() || holder.getLayoutPosition() >= headerViews.size() + wrappedAdapter.getItemCount();
             }
-        }
+        });
     }
 
     /**

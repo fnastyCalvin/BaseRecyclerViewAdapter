@@ -20,14 +20,16 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
     protected RecyclerView recyclerView;
     protected List<T> data;
     protected int layoutResId = -1;
+
+    protected View itemView;
     protected OnItemClickListener<T> onItemClickListener;
 
     protected boolean multiTypeItemSupport;
     protected SparseArrayCompat<View> multiTypeItems;
 
     public BaseRecyclerViewAdapter(){
-        //do not use;
         this(null,-1);
+        //need use itemView
     }
 
     public BaseRecyclerViewAdapter(@LayoutRes int layoutResId){
@@ -64,12 +66,18 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
         if(multiTypeItemSupport){
             int layoutId = getLayoutResId(viewType);
             if (layoutId == -1) {
-                throw new RuntimeException("can not find a valid layout Resource file, Plz override getLayoutResId(viewType) method for a mutliType adapter!");
+                throw new IllegalArgumentException("can not find a valid layout Resource file, Plz override getLayoutResId(viewType) method for a mutliType adapter!");
             }
             view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutId, viewGroup, false);
         }
         else {
-            view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutResId, viewGroup, false);
+            if (layoutResId <= 0 || itemView == null) throw new IllegalArgumentException("can not find a valid item view");
+            if (layoutResId > 0) {
+                view = LayoutInflater.from(viewGroup.getContext()).inflate(layoutResId, viewGroup, false);
+            }
+            if (itemView != null){
+                view = itemView;
+            }
         }
         BaseRecyclerViewHolder viewHolder = new BaseRecyclerViewHolder(view);
         return viewHolder;
@@ -163,6 +171,9 @@ public abstract class BaseRecyclerViewAdapter<T> extends RecyclerView.Adapter<Ba
         notifyDataSetChanged();
     }
 
+    public void setItemView(View itemView) {
+        this.itemView = itemView;
+    }
 
     @Override
     public int getItemViewType(int position) {

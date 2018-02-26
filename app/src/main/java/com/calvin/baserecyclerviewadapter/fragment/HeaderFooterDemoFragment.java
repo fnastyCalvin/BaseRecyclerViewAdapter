@@ -8,6 +8,7 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,11 +19,12 @@ import android.widget.Toast;
 import com.bumptech.glide.Glide;
 import com.calvin.base.BaseRecyclerViewAdapter;
 import com.calvin.base.HeaderFooterAdapter;
+import com.calvin.base.LoadMoreAdapter;
 import com.calvin.baserecyclerviewadapter.ApiEngine;
 import com.calvin.baserecyclerviewadapter.App;
-import com.calvin.baserecyclerviewadapter.model.NormalModel;
 import com.calvin.baserecyclerviewadapter.R;
 import com.calvin.baserecyclerviewadapter.adapter.NormalAdapter;
+import com.calvin.baserecyclerviewadapter.model.NormalModel;
 
 import java.util.List;
 
@@ -34,10 +36,13 @@ import retrofit.Retrofit;
  * Created by jiangtao on 2016/6/1 15:59.
  */
 public class HeaderFooterDemoFragment extends Fragment {
+    private static final String TAG = "HeaderFooterDemoFragmen";
     View root;
     RecyclerView recyclerView;
     Button btn_add;
     NormalAdapter normalAdapter;
+    LoadMoreAdapter loadMoreAdapter;
+    int page = 1;
 
     @Nullable
     @Override
@@ -52,7 +57,15 @@ public class HeaderFooterDemoFragment extends Fragment {
         App.getInstance().getRetrofit().create(ApiEngine.class).getNormalModels().enqueue(new Callback<List<NormalModel>>() {
             @Override
             public void onResponse(Response<List<NormalModel>> response, Retrofit retrofit) {
-                normalAdapter.replaceAll(response.body());
+//                normalAdapter.replaceAll(response.body());
+                List<NormalModel> data = response.body();
+                Log.d(TAG, "onResponse: data size -->"+data.size()+"  page==>"+page);
+                normalAdapter.addAll(data);
+                loadMoreAdapter.endLoadMore();
+                page++;
+                if (page >= 5){
+                    loadMoreAdapter.setNoMore();
+                }
             }
 
             @Override
@@ -65,11 +78,11 @@ public class HeaderFooterDemoFragment extends Fragment {
     private void initView() {
         normalAdapter = new NormalAdapter(R.layout.item_normal);
         final HeaderFooterAdapter headerAdapter = new HeaderFooterAdapter(normalAdapter);
-        recyclerView = (RecyclerView) root.findViewById(R.id.recyclerView);
+        recyclerView = root.findViewById(R.id.recyclerView);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
-//        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
-        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+//        layoutManager.setOrientation(LinearLayoutManager.HORIZONTAL);
 
         GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(),2);
 
@@ -79,12 +92,27 @@ public class HeaderFooterDemoFragment extends Fragment {
 
         recyclerView.setLayoutManager(staggeredGridLayoutManager);
 
-        recyclerView.setAdapter(headerAdapter);
+        loadMoreAdapter = new LoadMoreAdapter(headerAdapter);
+        loadMoreAdapter.setNoMoreLoadViewId(R.layout.no_more);
+        loadMoreAdapter.setOnLoadMoreListener(new LoadMoreAdapter.OnLoadMoreListener() {
+            @Override
+            public void onLoadMore() {
+                initData();
+            }
+        });
+
+        recyclerView.setAdapter(loadMoreAdapter);
 
         final View headView = getHeadView("http://ww1.sinaimg.cn/large/43823ba4gw1f06wqlup6fj20sg0g0adi.jpg");
         final View footView = getHeadView("http://ww1.sinaimg.cn/large/43823ba4gw1f06wql1ancj20sg0g0tcg.jpg");
+
+        final View headView2 = getHeadView("http://ww1.sinaimg.cn/large/43823ba4gw1f06wqlup6fj20sg0g0adi.jpg");
+        final View footView2 = getHeadView("http://ww1.sinaimg.cn/large/43823ba4gw1f06wql1ancj20sg0g0tcg.jpg");
+
         headerAdapter.addHeaderView(headView);
         headerAdapter.addFooterView(footView);
+        headerAdapter.addHeaderView(headView2);
+        headerAdapter.addFooterView(footView2);
 
 
         normalAdapter.setOnItemClickListener(new BaseRecyclerViewAdapter.OnItemClickListener<NormalModel>() {
